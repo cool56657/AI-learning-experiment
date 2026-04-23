@@ -34,7 +34,7 @@ export default async function handler(req, res) {
   const recentMessages = messages.slice(-6);
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [
+        input: [
           {
             role: 'system',
             content: `당신은 학습을 돕는 AI 튜터입니다. 사용자는 아래 백신 지문을 학습하고 있습니다. 이 지문 내용을 바탕으로 한국어로 친절하고 명확하게 답해주세요. 지문에 근거한 답변을 우선하고, 답변은 너무 길지 않게 3~5문장 정도로 제시하세요. 지문에 없는 내용을 단정적으로 말하지 말고, 필요한 경우 "지문에 직접 제시되지는 않지만"이라고 밝혀 주세요.
@@ -66,7 +66,7 @@ ${PASSAGE}`
     }
 
     const reply =
-      data.choices?.[0]?.message?.content || '응답을 가져올 수 없습니다.';
+     data.output?.[0]?.content?.[0]?.text || '응답을 가져올 수 없습니다.';
 
     return res.status(200).json({ reply });
   } catch (error) {
