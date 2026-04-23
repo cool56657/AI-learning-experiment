@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학습 실험 프로그램</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#fff;color:#1a1a1a;font-size:16px;line-height:1.7;}
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* Researcher bar — hidden by default, toggle with Ctrl+Shift+R */
+#researcher-bar{background:#f5f3ff;border-bottom:1px solid #c4b5fd;padding:8px 24px;display:none;align-items:center;justify-content:space-between;font-size:13px;}
+#researcher-bar.visible{display:flex;}
+#researcher-bar .rbadge{background:#7c3aed;color:white;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-right:8px;}
+#bar-timer{font-weight:700;color:#7c3aed;min-width:60px;}
+
+/* Setup */
+.setup-wrap{max-width:600px;margin:0 auto;padding:60px 24px;flex:1;display:flex;flex-direction:column;justify-content:center;}
+.setup-wrap h1{font-size:22px;font-weight:700;margin-bottom:8px;}
+.setup-wrap .desc{font-size:14px;color:#666;margin-bottom:32px;}
+.form-group{margin-bottom:24px;}
+.form-group label{display:block;font-size:14px;font-weight:600;margin-bottom:8px;}
+.form-group input[type=text]{width:220px;border:1px solid #d1d5db;border-radius:8px;padding:10px 14px;font-size:14px;font-family:inherit;}
+.form-group input[type=text]:focus{outline:none;border-color:#7c3aed;}
+.cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;}
+.cond-btn{background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;padding:14px;text-align:left;cursor:pointer;transition:border-color .15s;}
+.cond-btn:hover{border-color:#7c3aed;}
+.cond-btn.selected{border-color:#7c3aed;background:#f5f3ff;}
+.cond-btn .cl{font-size:11px;color:#9ca3af;margin-bottom:4px;}
+.cond-btn .ct{font-size:14px;font-weight:600;}
+.badge-ai{display:inline-block;background:#d1fae5;color:#065f46;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;margin-right:4px;}
+.badge-self{display:inline-block;background:#f3f4f6;color:#4b5563;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;margin-right:4px;}
+.err{font-size:12px;color:#dc2626;margin-top:6px;display:none;}
+.start-btn{background:#7c3aed;color:white;border:none;border-radius:8px;padding:12px 32px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;}
+.start-btn:hover{background:#6d28d9;}
+
+/* Centered content wrapper */
+.content-wrap{max-width:760px;margin:0 auto;padding:0 24px;flex:1;display:flex;flex-direction:column;justify-content:center;}
+.content-wrap.wide{max-width:1100px;}
+
+/* Guide / instruction boxes */
+.guide-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:32px 36px;font-size:15px;line-height:1.95;margin-bottom:28px;}
+.instr-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:32px 36px;font-size:15px;line-height:1.95;margin-bottom:28px;}
+.instr-note{color:#7c3aed;font-weight:600;}
+.notice{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:14px;color:#92400e;margin-bottom:20px;}
+
+/* Next button (small square) */
+.btn-arrow{background:#7c3aed;color:white;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;display:inline-block;width:auto;}
+.btn-arrow:hover{background:#6d28d9;}
+.btn-submit{background:#7c3aed;color:white;border:none;border-radius:8px;padding:12px 32px;font-size:15px;font-weight:600;cursor:pointer;}
+.btn-submit:hover{background:#6d28d9;}
+
+/* JOL */
+.jol-wrap{margin:20px 0;}
+.jol-input{width:130px;text-align:center;font-size:24px;font-weight:700;border:2px solid #d1d5db;border-radius:10px;padding:12px;font-family:inherit;color:#1a1a1a;}
+.jol-input:focus{outline:none;border-color:#7c3aed;}
+.scale-ends{display:flex;justify-content:space-between;font-size:12px;color:#9ca3af;margin-top:8px;max-width:420px;}
+
+/* Fixation */
+.fixation-screen{flex:1;display:flex;align-items:center;justify-content:center;background:#fff;}
+.fixation-cross{font-size:80px;font-weight:300;color:#000;line-height:1;}
+
+/* Learning */
+.learn-header{display:flex;align-items:center;justify-content:flex-end;margin-bottom:12px;padding:0 4px;}
+.timer-display{font-size:20px;font-weight:700;color:#7c3aed;background:#f5f3ff;padding:6px 18px;border-radius:20px;}
+.timer-display.warning{color:#dc2626;background:#fef2f2;}
+
+/* Split layout (AI) */
+.learn-layout-split{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;height:calc(100vh - 140px);min-height:700px;}
+.learn-left{padding:24px 28px;border-right:1px solid #e5e7eb;overflow-y:auto;}
+.learn-right{padding:24px 28px;background:#f9fafb;display:flex;flex-direction:column;}
+
+/* Full layout (Self) */
+.learn-layout-full{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;height:calc(100vh - 140px);min-height:700px;}
+.learn-full-inner{padding:32px 64px;overflow-y:auto;height:100%;}
+
+.panel-label{font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;}
+.passage-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:24px;}
+.passage-text{font-size:14px;line-height:1.95;color:#1a1a1a;}
+.passage-text p{margin-bottom:18px;}
+
+/* Chat */
+.chat-area{flex:1;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:8px;min-height:0;}
+.chat-msg{padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.6;max-width:88%;}
+.chat-msg.user{background:#7c3aed;color:white;align-self:flex-end;}
+.chat-msg.ai{background:white;border:1px solid #e5e7eb;color:#1a1a1a;align-self:flex-start;}
+.chat-input-row{display:flex;gap:8px;flex-shrink:0;}
+.chat-input-row input{flex:1;border:1px solid #d1d5db;border-radius:8px;padding:9px 13px;font-size:13px;font-family:inherit;color:#1a1a1a;background:white;}
+.chat-input-row input:focus{outline:none;border-color:#7c3aed;}
+.chat-input-row button{background:#7c3aed;color:white;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;}
+
+/* Survey */
+.survey-card{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:28px 32px;margin-bottom:20px;}
+.survey-q{font-size:15px;margin-bottom:8px;line-height:1.7;color:#1a1a1a;}
+.survey-scale{font-size:13px;color:#1a1a1a;margin-bottom:14px;}
+.likert-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.likert-row input[type=radio]{display:none;}
+.likert-row label{width:40px;height:40px;border-radius:50%;border:1.5px solid #d1d5db;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:#6b7280;background:white;transition:all .1s;}
+.likert-row input[type=radio]:checked+label{background:#7c3aed;color:white;border-color:#7c3aed;}
+.likert-row label:hover{border-color:#7c3aed;}
+.likert-ends{display:flex;justify-content:space-between;font-size:11px;color:#6b7280;margin-top:8px;}
+.survey-session-label{font-size:15px;color:#1a1a1a;margin-bottom:20px;line-height:1.7;}
+
+/* Math */
+.math-scroll{height:calc(100vh - 160px);min-height:500px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:12px;padding:20px 24px;}
+.math-list{display:flex;flex-direction:column;gap:10px;max-width:400px;margin:0 auto;}
+.math-item{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 20px;display:flex;align-items:center;gap:16px;}
+.math-q{font-size:16px;font-weight:600;min-width:150px;}
+.math-input{width:80px;text-align:center;font-size:15px;border:1.5px solid #d1d5db;border-radius:6px;padding:6px;font-family:inherit;}
+.math-input:focus{outline:none;border-color:#7c3aed;}
+
+/* Test — centered */
+.test-center{flex:1;display:flex;flex-direction:column;justify-content:center;}
+.test-q-wrap{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:32px 36px;margin-bottom:24px;}
+.test-q-text{font-size:16px;line-height:1.85;margin-bottom:24px;font-weight:500;color:#1a1a1a;}
+.test-textarea{width:100%;border:1.5px solid #d1d5db;border-radius:8px;padding:14px;font-size:14px;font-family:inherit;resize:vertical;min-height:140px;color:#1a1a1a;}
+.test-textarea:focus{outline:none;border-color:#7c3aed;}
+
+/* Post survey */
+.post-input{border:1.5px solid #d1d5db;border-radius:8px;padding:12px 14px;font-size:14px;font-family:inherit;color:#1a1a1a;}
+.post-input:focus{outline:none;border-color:#7c3aed;}
+.post-textarea{width:100%;border:1.5px solid #d1d5db;border-radius:8px;padding:12px 14px;font-size:14px;font-family:inherit;resize:vertical;min-height:100px;color:#1a1a1a;}
+.post-textarea:focus{outline:none;border-color:#7c3aed;}
+.radio-row{display:flex;gap:20px;margin-top:8px;}
+.radio-row label{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;}
+
+/* End */
+.end-wrap{max-width:600px;margin:0 auto;padding:0 24px;flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;}
+.end-wrap h2{font-size:24px;font-weight:700;margin-bottom:20px;}
+.end-wrap p{font-size:15px;color:#555;line-height:1.9;}
+.end-wrap a{color:#7c3aed;}
+.dl-btns{margin-top:32px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+
+.err-inline{font-size:12px;color:#dc2626;margin-top:6px;display:none;}
+.save-status{font-size:13px;color:#059669;margin-top:12px;display:none;}
+</style>
+</head>
+<body>
+
+<div id="researcher-bar">
+  <span><span class="rbadge">연구자</span><span id="bar-info">설정 필요</span></span>
+  <span id="bar-timer"></span>
+</div>
+
+<!-- SETUP -->
+<div id="s-setup" class="screen active">
+  <div class="setup-wrap">
+    <h1>실험 설정</h1>
+    <p class="desc">참가자 번호와 조건을 설정한 후 실험을 시작하세요.</p>
+    <div class="form-group">
+      <label>참가자 번호</label>
+      <input type="text" id="pid-input" />
+      <div class="err" id="pid-err">참가자 번호를 입력해주세요.</div>
+    </div>
+    <div class="form-group">
+      <label>조건 선택 (섹션 A → 섹션 B)</label>
+      <div class="cond-grid">
+        <button class="cond-btn" id="cb-1" onclick="selCond(1)"><div class="cl">조건 1</div><div class="ct">AI → AI</div><div style="margin-top:6px"><span class="badge-ai">AI</span><span class="badge-ai">AI</span></div></button>
+        <button class="cond-btn" id="cb-2" onclick="selCond(2)"><div class="cl">조건 2</div><div class="ct">AI → Self</div><div style="margin-top:6px"><span class="badge-ai">AI</span><span class="badge-self">Self</span></div></button>
+        <button class="cond-btn" id="cb-3" onclick="selCond(3)"><div class="cl">조건 3</div><div class="ct">Self → AI</div><div style="margin-top:6px"><span class="badge-self">Self</span><span class="badge-ai">AI</span></div></button>
+        <button class="cond-btn" id="cb-4" onclick="selCond(4)"><div class="cl">조건 4</div><div class="ct">Self → Self</div><div style="margin-top:6px"><span class="badge-self">Self</span><span class="badge-self">Self</span></div></button>
+      </div>
+      <div class="err" id="cond-err">조건을 선택해주세요.</div>
+    </div>
+    <button class="start-btn" onclick="startExp()">실험 시작</button>
+  </div>
+</div>
+
+<!-- INTRO -->
+<div id="s-intro" class="screen">
+  <div class="content-wrap">
+    <div class="guide-box">
+      안녕하십니까?<br>
+      연세대학교 교육학과 교육심리·학습과학 연구실, 심리학과 응용뇌인지과학 연구실입니다.<br><br>
+      먼저, 바쁘신 가운데 귀중한 시간을 내어 본 실험에 참여해 주셔서 감사합니다.<br>
+      본 연구는 <u><strong>생성형 AI 기반 학습에서의 과제 수행 및 신경 활성화 분석</strong></u>을 위한 것입니다.<br><br>
+      여러분이 응답해 주시는 내용은 개인정보보호법에 따라 숫자 혹은 기호로 표기되어 철저하게 비밀이 보장되며, 연구 이외의 목적으로는 절대 사용되지 않을 것입니다.<br><br>
+      실험은 <strong>약 50분</strong> 정도 소요될 것입니다.<br><br>
+      실험 과정에 <strong>성심성의껏 참여</strong>해 주시길 요청드립니다.<br>
+      감사합니다.
+    </div>
+    <button class="btn-arrow" onclick="goTo('s-pre-jol')">다음</button>
+  </div>
+</div>
+
+<!-- PRE-STUDY JOL -->
+<div id="s-pre-jol" class="screen">
+  <div class="content-wrap">
+    <div class="survey-card">
+      <div class="survey-q">앞으로 여러분은 <strong>'백신'</strong>에 대한 지문을 학습합니다.<br>최종시험에서는 학습한 지문과 관련된 문제들을 풀게 됩니다.<br><br>최종시험 문제를 얼마나 잘 맞힐 수 있을 거라고 생각하나요?<br><span style="color:#6b7280;font-size:14px;">0 (문제를 전혀 맞히지 못할 것 같다) ~ 100 (문제를 매우 잘 맞힐 것 같다)</span></div>
+      <div class="jol-wrap">
+        <strong>지금 0에서 100 사이의 숫자를 입력해 주세요.</strong>
+        <div style="margin-top:12px;"><input class="jol-input" type="number" id="jol-pre" min="0" max="100" /></div>
+        <div class="scale-ends"><span>0 = 전혀 맞히지 못할 것 같다</span><span>100 = 매우 잘 맞힐 것 같다</span></div>
+        <div class="err-inline" id="jol-pre-err">0에서 100 사이의 숫자를 입력해주세요.</div>
+      </div>
+    </div>
+    <button class="btn-arrow" onclick="submitPreJOL()">다음</button>
+  </div>
+</div>
+
+<!-- BASELINE INSTRUCTION -->
+<div id="s-bl-instr" class="screen">
+  <div class="content-wrap">
+    <div class="guide-box">
+      다음 화면에서는 실험 준비를 위해 화면 중앙에 십자(+) 표시가 먼저 제시됩니다.<br>
+      십자 표시가 나타나는 동안에 그 지점을 바라보며 <strong>눈과 머리를 최대한 움직이지 말아주세요.</strong>
+    </div>
+    <button class="btn-arrow" onclick="startBaseline()">다음</button>
+  </div>
+</div>
+
+<!-- BASELINE FIXATION -->
+<div id="s-baseline" class="screen">
+  <div class="fixation-screen"><div class="fixation-cross">+</div></div>
+</div>
+
+<!-- SECTION A INSTRUCTION (AI) -->
+<div id="s-instr-a-ai" class="screen">
+  <div class="content-wrap">
+    <div class="instr-box">
+      지금부터 여러분은 <strong>'백신'</strong>에 대한 지문을 학습합니다.<br>
+      최종시험에서는 학습한 지문과 관련된 문제들을 풀게 됩니다.<br><br>
+      학습에는 <strong>6분</strong>의 시간이 주어지며,<br>
+      시간이 종료되면 자동으로 다음 화면으로 넘어갑니다.<br><br>
+      지문을 읽는 동안에는 화면 우측에 제공되는 ChatGPT를 활용하여 학습할 수 있습니다.<br>
+      평소 학습할 때와 동일한 방식으로 ChatGPT를 활용해 주시기 바랍니다.<br>
+      <span style="color:#6b7280;">(예. 내용 요약, 핵심 정리, 어려운 내용 질문 등)</span><br><br>
+      단, <strong>ChatGPT는 최소 1회 이상 반드시 사용해야 합니다.</strong><br>
+      <span class="instr-note">※ 개인의 신상과 관련된 민감한 정보는 입력하실 수 없습니다 ※</span>
+    </div>
+    <button class="btn-arrow" onclick="startLearn('a')">다음</button>
+  </div>
+</div>
+
+<!-- SECTION A INSTRUCTION (SELF) -->
+<div id="s-instr-a-self" class="screen">
+  <div class="content-wrap">
+    <div class="instr-box">
+      지금부터 여러분은 <strong>'백신'</strong>에 대한 지문을 학습합니다.<br>
+      최종시험에서는 학습한 지문과 관련된 문제들을 풀게 됩니다.<br><br>
+      학습에는 <strong>6분</strong>의 시간이 주어지며,<br>
+      시간이 종료되면 자동으로 다음 화면으로 넘어갑니다.<br><br>
+      지문을 읽는 동안에는 <strong>외부 도구의 도움 없이</strong> 스스로 학습해야 합니다.
+    </div>
+    <button class="btn-arrow" onclick="startLearn('a')">다음</button>
+  </div>
+</div>
+
+<!-- SECTION A LEARNING -->
+<div id="s-learn-a" class="screen">
+  <div class="content-wrap wide" style="padding-top:20px;padding-bottom:20px;">
+    <div class="learn-header">
+      <div class="timer-display" id="timer-a">남은 시간 : 6:00</div>
+    </div>
+    <div id="learn-a-container"></div>
+  </div>
+</div>
+
+<!-- SECTION A JOL -->
+<div id="s-survey-a-jol" class="screen">
+  <div class="content-wrap">
+    <div class="survey-session-label">지금부터는 &lt;첫 번째 학습세션&gt;에 대한 자신의 학습 태도를 돌아보고, 다음 설문 문항에 답해주세요.</div>
+    <div class="notice">※ 지문의 내용과 본인의 학습 과정에 대해 충분히 생각한 후에 응답해 주시길 바랍니다 ※</div>
+    <div class="survey-card">
+      <div class="survey-q">백신 지문에 대한 문제를 얼마나 잘 맞힐 수 있을 거라고 생각하나요?<br><span style="font-size:13px;color:#6b7280;">0 (문제를 전혀 맞히지 못할 것 같다) ~ 100 (문제를 매우 잘 맞힐 것 같다)</span></div>
+      <div class="jol-wrap">
+        <strong>지금 0에서 100 사이의 숫자를 입력해 주세요.</strong>
+        <div style="margin-top:12px;"><input class="jol-input" type="number" id="jol-a" min="0" max="100" /></div>
+        <div class="scale-ends"><span>0 = 전혀 맞히지 못할 것 같다</span><span>100 = 매우 잘 맞힐 것 같다</span></div>
+        <div class="err-inline" id="jol-a-err">0에서 100 사이의 숫자를 입력해주세요.</div>
+      </div>
+    </div>
+    <button class="btn-arrow" onclick="submitJOLA()">다음</button>
+  </div>
+</div>
+
+<!-- SECTION A SURVEY -->
+<div id="s-survey-a-likert" class="screen">
+  <div class="content-wrap">
+    <div class="survey-session-label">지금부터는 &lt;첫 번째 학습세션&gt;에 대한 자신의 학습 태도를 돌아보고, 다음 설문 문항에 답해주세요.</div>
+    <div class="notice">※ 지문의 내용과 본인의 학습 과정에 대해 충분히 생각한 후에 응답해 주시길 바랍니다 ※</div>
+    <div class="survey-card">
+      <div class="survey-q">나는 학습할 때,</div>
+      <div class="survey-scale">1 (매우 낮은 정신적 노력을 들였다) ~ 9 (매우 높은 정신적 노력을 들였다)</div>
+      <div class="likert-row" id="effort-a-row"></div>
+      <div class="likert-ends"><span>매우 낮은 정신적 노력을 들였다</span><span>매우 높은 정신적 노력을 들였다</span></div>
+      <div class="err-inline" id="effort-a-err">응답을 선택해주세요.</div>
+    </div>
+    <div class="survey-card">
+      <div class="survey-q">나는 학습 과정을</div>
+      <div class="survey-scale">1 (내가 주도하지 않는다고 느꼈다) ~ 7 (내가 주도하고 있다고 느꼈다)</div>
+      <div class="likert-row" id="agency-a-row"></div>
+      <div class="likert-ends"><span>내가 주도하지 않는다고 느꼈다</span><span>내가 주도하고 있다고 느꼈다</span></div>
+      <div class="err-inline" id="agency-a-err">응답을 선택해주세요.</div>
+    </div>
+    <button class="btn-arrow" onclick="submitSurveyALikert()">다음</button>
+  </div>
+</div>
+
+<!-- REST AB INSTRUCTION -->
+<div id="s-rest-ab-instr" class="screen">
+  <div class="content-wrap">
+    <div class="guide-box">
+      다음 단계로 넘어가기 전, 화면 중앙에 십자(+) 표시가 먼저 제시됩니다.<br>
+      십자 표시가 나타나는 동안에 그 지점을 바라보며 <strong>눈과 머리를 최대한 움직이지 말아주세요.</strong>
+    </div>
+    <button class="btn-arrow" onclick="startRest('ab')">다음</button>
+  </div>
+</div>
+
+<!-- REST AB FIXATION -->
+<div id="s-rest-ab" class="screen">
+  <div class="fixation-screen"><div class="fixation-cross">+</div></div>
+</div>
+
+<!-- SECTION B INSTRUCTION (AI) -->
+<div id="s-instr-b-ai" class="screen">
+  <div class="content-wrap">
+    <div class="instr-box">
+      지금부터 여러분은 <strong>'백신'</strong>에 대한 지문을 <strong>다시</strong> 학습합니다.<br>
+      최종시험에서는 학습한 지문과 관련된 문제들을 풀게 됩니다.<br><br>
+      학습에는 <strong>6분</strong>의 시간이 주어지며,<br>
+      시간이 종료되면 자동으로 다음 화면으로 넘어갑니다.<br><br>
+      지문을 읽는 동안에는 화면 우측에 제공되는 ChatGPT를 활용하여 학습할 수 있습니다.<br>
+      평소 학습할 때와 동일한 방식으로 ChatGPT를 활용해 주시기 바랍니다.<br>
+      <span style="color:#6b7280;">(예. 내용 요약, 핵심 정리, 어려운 내용 질문 등)</span><br><br>
+      단, <strong>ChatGPT는 최소 1회 이상 반드시 사용해야 합니다.</strong><br>
+      <span class="instr-note">※ 개인의 신상과 관련된 민감한 정보는 입력하실 수 없습니다. ※</span>
+    </div>
+    <button class="btn-arrow" onclick="startLearn('b')">다음</button>
+  </div>
+</div>
+
+<!-- SECTION B INSTRUCTION (SELF) -->
+<div id="s-instr-b-self" class="screen">
+  <div class="content-wrap">
+    <div class="instr-box">
+      지금부터 여러분은 <strong>'백신'</strong>에 대한 지문을 <strong>다시</strong> 학습합니다.<br>
+      최종시험에서는 학습한 지문과 관련된 문제들을 풀게 됩니다.<br><br>
+      학습에는 <strong>6분</strong>의 시간이 주어지며,<br>
+      시간이 종료되면 자동으로 다음 화면으로 넘어갑니다.<br><br>
+      지문을 읽는 동안에는 <strong>외부 도구의 도움 없이</strong> 스스로 학습해야 합니다.
+    </div>
+    <button class="btn-arrow" onclick="startLearn('b')">다음</button>
+  </div>
+</div>
+
+<!-- SECTION B LEARNING -->
+<div id="s-learn-b" class="screen">
+  <div class="content-wrap wide" style="padding-top:20px;padding-bottom:20px;">
+    <div class="learn-header">
+      <div class="timer-display" id="timer-b">남은 시간 : 6:00</div>
+    </div>
+    <div id="learn-b-container"></div>
+  </div>
+</div>
+
+<!-- SECTION B JOL -->
+<div id="s-survey-b-jol" class="screen">
+  <div class="content-wrap">
+    <div class="survey-session-label">지금부터는 &lt;두 번째 학습세션&gt;에 대한 자신의 학습 태도를 돌아보고, 다음 설문 문항에 답해주세요.</div>
+    <div class="notice">※ 지문의 내용과 본인의 학습 과정에 대해 충분히 생각한 후에 응답해 주시길 바랍니다 ※</div>
+    <div class="survey-card">
+      <div class="survey-q">백신 지문에 대한 문제를 얼마나 잘 맞힐 수 있을 거라고 생각하나요?<br><span style="font-size:13px;color:#6b7280;">0 (문제를 전혀 맞히지 못할 것 같다) ~ 100 (문제를 매우 잘 맞힐 것 같다)</span></div>
+      <div class="jol-wrap">
+        <strong>지금 0에서 100 사이의 숫자를 입력해 주세요.</strong>
+        <div style="margin-top:12px;"><input class="jol-input" type="number" id="jol-b" min="0" max="100" /></div>
+        <div class="scale-ends"><span>0 = 전혀 맞히지 못할 것 같다</span><span>100 = 매우 잘 맞힐 것 같다</span></div>
+        <div class="err-inline" id="jol-b-err">0에서 100 사이의 숫자를 입력해주세요.</div>
+      </div>
+    </div>
+    <button class="btn-arrow" onclick="submitJOLB()">다음</button>
+  </div>
+</div>
+
+<!-- SECTION B SURVEY -->
+<div id="s-survey-b-likert" class="screen">
+  <div class="content-wrap">
+    <div class="survey-session-label">지금부터는 &lt;두 번째 학습세션&gt;에 대한 자신의 학습 태도를 돌아보고, 다음 설문 문항에 답해주세요.</div>
+    <div class="notice">※ 지문의 내용과 본인의 학습 과정에 대해 충분히 생각한 후에 응답해 주시길 바랍니다 ※</div>
+    <div class="survey-card">
+      <div class="survey-q">나는 학습할 때,</div>
+      <div class="survey-scale">1 (매우 낮은 정신적 노력을 들였다) ~ 9 (매우 높은 정신적 노력을 들였다)</div>
+      <div class="likert-row" id="effort-b-row"></div>
+      <div class="likert-ends"><span>매우 낮은 정신적 노력을 들였다</span><span>매우 높은 정신적 노력을 들였다</span></div>
+      <div class="err-inline" id="effort-b-err">응답을 선택해주세요.</div>
+    </div>
+    <div class="survey-card">
+      <div class="survey-q">나는 학습 과정을</div>
+      <div class="survey-scale">1 (내가 주도하지 않는다고 느꼈다) ~ 7 (내가 주도하고 있다고 느꼈다)</div>
+      <div class="likert-row" id="agency-b-row"></div>
+      <div class="likert-ends"><span>내가 주도하지 않는다고 느꼈다</span><span>내가 주도하고 있다고 느꼈다</span></div>
+      <div class="err-inline" id="agency-b-err">응답을 선택해주세요.</div>
+    </div>
+    <button class="btn-arrow" onclick="submitSurveyBLikert()">다음</button>
+  </div>
+</div>
+
+<!-- SECTION B SATISFACTION -->
+<div id="s-survey-b-satisfy" class="screen">
+  <div class="content-wrap">
+    <div class="notice">※ 지문의 내용과 본인의 학습 과정에 대해 충분히 생각한 후에 응답해 주시길 바랍니다 ※</div>
+    <div class="survey-card">
+      <div class="survey-q" id="satisfy-desc" style="margin-bottom:20px;"></div>
+      <div class="survey-q">나는 지금까지의 학습 방식이</div>
+      <div class="survey-scale">1 (전혀 만족스럽지 않았다) ~ 7 (매우 만족스러웠다)</div>
+      <div class="likert-row" id="satisfy-row"></div>
+      <div class="likert-ends"><span>전혀 만족스럽지 않았다</span><span>매우 만족스러웠다</span></div>
+      <div class="err-inline" id="satisfy-err">응답을 선택해주세요.</div>
+    </div>
+    <button class="btn-arrow" onclick="submitSatisfy()">다음</button>
+  </div>
+</div>
+
+<!-- REST DISTRACTOR INSTRUCTION -->
+<div id="s-rest-dist-instr" class="screen">
+  <div class="content-wrap">
+    <div class="guide-box">
+      다음 단계로 넘어가기 전, 화면 중앙에 십자(+) 표시가 먼저 제시됩니다.<br>
+      십자 표시가 나타나는 동안에 그 지점을 바라보며 <strong>눈과 머리를 최대한 움직이지 말아주세요.</strong>
+    </div>
+    <button class="btn-arrow" onclick="startRest('dist')">다음</button>
+  </div>
+</div>
+
+<!-- REST DISTRACTOR FIXATION -->
+<div id="s-rest-dist" class="screen">
+  <div class="fixation-screen"><div class="fixation-cross">+</div></div>
+</div>
+
+<!-- DISTRACTOR INSTRUCTION -->
+<div id="s-dist-instr" class="screen">
+  <div class="content-wrap">
+    <div class="instr-box">
+      지문 학습을 모두 마쳤습니다.<br>
+      지금부터는 간단한 수학 연산문제를 풀게 됩니다.<br><br>
+      <strong>2분</strong> 동안 문제를 풀 수 있으며, 2분이 지나면 자동으로 화면이 전환됩니다.<br>
+      문제를 가능한 한 <strong>빠르고 정확하게</strong> 풀어주세요.
+    </div>
+    <button class="btn-arrow" onclick="startDistractor()">다음</button>
+  </div>
+</div>
+
+<!-- DISTRACTOR -->
+<div id="s-dist" class="screen">
+  <div class="content-wrap">
+    <div class="learn-header">
+      <div class="timer-display" id="timer-dist">남은 시간 : 2:00</div>
+    </div>
+    <div class="math-scroll">
+      <div class="math-list" id="math-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REST TEST INSTRUCTION -->
+<div id="s-rest-test-instr" class="screen">
+  <div class="content-wrap">
+    <div class="guide-box">
+      다음 단계로 넘어가기 전, 화면 중앙에 십자(+) 표시가 먼저 제시됩니다.<br>
+      십자 표시가 나타나는 동안에 그 지점을 바라보며 <strong>눈과 머리를 최대한 움직이지 말아주세요.</strong>
+    </div>
+    <button class="btn-arrow" onclick="startRest('test')">다음</button>
+  </div>
+</div>
+
+<!-- REST TEST FIXATION -->
+<div id="s-rest-test" class="screen">
+  <div class="fixation-screen"><div class="fixation-cross">+</div></div>
+</div>
+
+<!-- TEST INSTRUCTION -->
+<div id="s-test-instr" class="screen">
+  <div class="content-wrap">
+    <div class="instr-box">
+      지금부터 최종시험이 시작됩니다.<br>
+      최종시험으로 백신에 관한 <strong>12개의 문제</strong>를 풀게 됩니다.<br><br>
+      각 문제당 <strong>시간 제한은 없습니다.</strong><br>
+      문제를 읽고 성심성의껏 질문에 답해주세요.
+    </div>
+    <button class="btn-arrow" onclick="startTest()">다음</button>
+  </div>
+</div>
+
+<!-- TEST -->
+<div id="s-test" class="screen">
+  <div class="content-wrap">
+    <div class="test-center">
+      <div class="test-q-wrap">
+        <div class="test-q-text" id="test-q-text"></div>
+        <textarea class="test-textarea" id="test-answer" placeholder="답변을 입력하세요..."></textarea>
+        <div class="err-inline" id="test-ans-err">답변을 입력해주세요.</div>
+      </div>
+      <button class="btn-arrow" onclick="nextTestQ()">다음</button>
+    </div>
+  </div>
+</div>
+
+<!-- POST SURVEY -->
+<div id="s-post" class="screen">
+  <div class="content-wrap">
+    <div class="guide-box" style="margin-bottom:24px;">
+      모든 시험이 끝났습니다.<br>
+      지금부터는 질문을 읽고 해당하는 정도에 체크해주세요.<br>
+      <span style="font-size:14px;color:#6b7280;">(답변에 관계없이 실험이 완료되면 보상이 지급되니, 솔직하게 응답해주세요.)</span>
+    </div>
+    <div class="survey-card">
+      <div class="survey-q">본 실험에 참여하기 전, 백신에 대해 얼마나 알고 있었나요?<br><span style="font-size:13px;color:#6b7280;">(지문에서 학습한 내용에 대한 사전지식이 얼마나 있었는지 7점 척도로 응답해주세요.)</span></div>
+      <div class="survey-scale" style="margin-top:10px;">1 (학습한 내용에 대한 사전지식이 전혀 없었다) ~ 7 (학습한 내용에 대해 많이 알고 있었다)</div>
+      <div class="likert-row" id="prior-row"></div>
+      <div class="likert-ends"><span>사전지식이 전혀 없었다</span><span>많이 알고 있었다</span></div>
+      <div class="err-inline" id="prior-err">응답을 선택해주세요.</div>
+    </div>
+    <div class="survey-card">
+      <div class="survey-q">평소 학습할 때, AI를 얼마나 자주 사용하나요?</div>
+      <div class="survey-scale" style="margin-top:10px;">1 (AI를 전혀 사용하지 않는다) ~ 7 (AI를 항상 사용한다)</div>
+      <div class="likert-row" id="aifreq-row"></div>
+      <div class="likert-ends"><span>전혀 사용하지 않는다</span><span>항상 사용한다</span></div>
+      <div class="err-inline" id="aifreq-err">응답을 선택해주세요.</div>
+    </div>
+    <div class="survey-card">
+      <div class="survey-scale" style="margin-bottom:16px;">1 (전혀 그렇지 않다) ~ 4 (매우 그렇다)</div>
+      <div id="aiseq-items"></div>
+    </div>
+    <div class="survey-card">
+      <div class="survey-q">평소 학습할 때 AI를 어떻게 사용하는지 자유롭게 기술해 주세요.</div>
+      <textarea class="post-textarea" id="ai-usage" style="margin-top:12px;" placeholder="자유롭게 작성해주세요..."></textarea>
+      <div class="err-inline" id="ai-usage-err">내용을 입력해주세요.</div>
+    </div>
+    <div class="survey-card">
+      <div style="margin-bottom:20px;">
+        <div class="survey-q" style="margin-bottom:8px;">만 나이를 입력해주세요.</div>
+        <input class="post-input" type="number" id="age" style="width:100px;" />
+        <div class="err-inline" id="age-err">나이를 입력해주세요.</div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <div class="survey-q" style="margin-bottom:8px;">성별을 선택해주세요.</div>
+        <div class="radio-row">
+          <label><input type="radio" name="gender" value="male" /> 남</label>
+          <label><input type="radio" name="gender" value="female" /> 여</label>
+        </div>
+        <div class="err-inline" id="gender-err">성별을 선택해주세요.</div>
+      </div>
+      <div>
+        <div class="survey-q" style="margin-bottom:8px;">전공을 입력해주세요.</div>
+        <input class="post-input" type="text" id="major" style="max-width:260px;width:100%;" />
+        <div class="err-inline" id="major-err">전공을 입력해주세요.</div>
+      </div>
+    </div>
+    <button class="btn-submit" onclick="submitPost()">제출하기</button>
+    <div class="save-status" id="save-status">구글 드라이브에 저장 중...</div>
+  </div>
+</div>
+
+<!-- END -->
+<div id="s-end" class="screen">
+  <div class="end-wrap">
+    <h2>실험이 완료되었습니다</h2>
+    <p>
+      시간을 내어 실험에 참여해 주셔서 감사합니다.<br>
+      응답해 주신 내용이 제출되었습니다.<br><br>
+      실험 및 보상 관련 문의: <a href="mailto:cool56657@gmail.com">cool56657@gmail.com</a>
+    </p>
+    <div class="dl-btns">
+      <button class="btn-submit" onclick="downloadCSV()">데이터 CSV 다운로드</button>
+      <button class="btn-submit" style="background:#059669;" onclick="downloadChat()">대화 내용 TXT 다운로드</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASSAGE_HTML = `
+<p class="passage-title">백신(Vaccine)</p>
+<p>백신은 특정 질병에 대한 면역을 형성하거나 증진시키는 생물학적 제제(preparation)이다. 대부분의 백신은 예방용(prophylactic)으로, 자연적으로 발생하는 병원체에 의해 향후 감염이 일어났을 때 그 발생을 예방하거나 그 영향을 완화하는 것을 목적으로 한다. 독감 백신은 인플루엔자 바이러스로부터 보호하기 위해 매년 접종되는 예방용 백신의 대표적인 예이다. 그러나 백신은 이미 질병에 걸린 사람들의 고통을 완화하기 위한 치료적(therapeutic) 목적으로도 사용되어 왔다. 이러한 치료적 활용의 예로는 현재 다양한 유형의 암치료를 위해 개발되고 있는 백신들을 들 수 있다. 최근까지 대부분의 백신은 아동을 대상으로 개발·접종되어 왔으나, 치료용 백신의 개발로 인해 성인을 대상으로 하는 치료의 수가 증가하고 있다.</p>
+<p>초기 백신은 아시아에서 기원한 접종법인 인두법(variolation)의 개념에서 영감을 받았다. 인두법은 약화된 형태의 질병을 흡입을 통해 의도적으로 감염시키는 기술이다. 일부 역사가들은 인두법에 대한 가장 이른 기록이 인도의 8세기 문헌인 『니다나(Nidana)』에서 주장한다. 그러나 인두법에 대한 최초의 명확한 기록은 1549년 중국의 완전(Wan Quan)이 저술한 『두진심법(Douzhen Xinfa)』에서 찾아볼 수 있다. 두진심법에는 건조된 천연두 딱지를 가루로 만들어 개인의 코 안으로 불어넣는 방식 서술되어 있으며, 이로 인해 감염된 사람은 경미한 형태의 천연두에 걸리게 되었다. 회복 후에는 해당 개인이 천연두에 대해 면역을 획득하였다. 인두법을 받은 사람들 중 일부는 사망하기도 했지만, 자연 감염으로 천연두에 걸렸을 때의 사망률에 비하면 그 비율은 훨씬 낮았다.</p>
+<p>18세기에 이르러 인두법은 아프리카, 인도, 오스만 제국으로 확산되었다. 1717년, 오스만 제국 주재 영국 대사의 부인이었던 메리 몬터규(Lady Mary Montagu)는 콘스탄티노플(오늘날의 이스탄불)에서 인두법을 접한 뒤, 영국으로 돌아가 이를 적극적으로 옹호하였다. 그녀의 요청에 따라 왕실 의사들은 수감자와 버려진 아동들을 대상으로 천연두 병원체를 피부 아래에 삽입하는 실험을 수행하였다. 이후 수개월 뒤 해당 아동들과 수감자들을 의도적으로 천연두에 노출시켰을 때 아무도 질병에 걸리지 않자, 해당 절차는 안전한 것으로 판단되었다. 그럼에도 불구하고 인두법은 상당한 위험성을 동반하였다. 환자가 시술 자체로 사망할 가능성이 있었을 뿐만 아니라, 경미한 형태의 질병이 확산되어 전염병을 유발할 위험도 존재했다.</p>
+<p>이후 수 세기에 걸쳐 에드워드 제너와 루이 파스퇴르와 같은 의학 연구자들은 고대의 인두법을 현대적인 백신 접종(inoculation) 방식으로 발전시켰다. 백신 접종은 예방 효과를 유지하면서도 위험성을 크게 낮추었다는 점에서 중요한 의학적 돌파구로 평가된다. 백신 접종이란 피부의 상처를 통해 의도적으로 감염을 유도하는 방법을 의미한다. 이 새로운 방식은 흡입된 바이러스 입자가 비말을 통해 광범위하게 감염을 확산시키는 인두법에 비해, 훨씬 작고 국소적인 감염을 유발한다. 이러한 소규모 감염은 면역 반응을 유도하기에는 충분하면서도, 바이러스가 치명적인 수준까지 증식하는 것을 억제하기 때문에 더 효과적으로 작동한다.</p>
+<p>백신이 효과를 발휘하는 이유는 향후 접촉할 수 있는 병원체에 대비하여 면역 체계를 미리 준비시키기 때문이다. 백신이 투여되면 면역 체계는 백신 성분을 외부 침입자로 인식하고 이를 제거한 뒤, 해당 병원체를 '기억'한다. 이후 실제로 병원성이 강한 병원체가 침입하면, 신체는 바이러스의 단백질 외피를 인식하고 감염된 세포가 증식하기 전에 이를 파괴하는 방식으로 대응한다. 물론 백신이 질병 발생을 완전히 예방하는 것은 아니다. 일부 개인의 경우 특정 항원에 대한 항체를 생성할 수 있는 B세포가 부족하거나, 전반적인 면역력이 저하되어 면역 반응이 제대로 일어나지 않을 수도 있다. 그럼에도 불구하고 백신 접종자가 해당 질병에 걸리더라도, 백신을 접종하지 않았을 경우에 비해 증상은 대체로 경미하다.</p>
+<p>일부 백신은 화학 물질이나 열을 사용하여 사멸 또는 불활성화된 병원성 미생물로 만들어진다. 인플루엔자, 콜레라, 간염 백신이 이에 해당한다. 다른 백신들은 병원성이 약화된 생바이러스를 포함하고 있으며, 이는 병원성이 발현되지 않도록 조절된 조건에서 배양된다. 황열, 홍역, 풍진, 유행성이하선염 백신이 이러한 예이다. 면역 반응을 강화하기 위해 스쿠알렌(squalene)과 같은 알루미늄 기반 보조제(adjuvant)가 일반적으로 첨가된다. 백신은 단가 백신(monovalent) 또는 다가 백신(polyvalent)일 수 있다. 단가 백신은 단일 항원 또는 단일 미생물에 대한 면역을 유도하도록 설계된 반면, 다가 백신은 동일한 병원체의 여러 균주 또는 둘 이상의 병원체에 대한 면역을 유도하도록 설계된다. 특정 상황에서는 빠르고 강력한 면역 반응을 형성하기 위해 단가 백신이 더 적합할 수도 있다.</p>
+<p>백신 개발의 한 가지 도전 과제는 경제적 문제이다. 말라리아와 같이 백신으로 근절할 수 있음에도 불구하고 주로 빈곤 국가에서 발생하는 질병들이 여기에 해당한다. 많은 백신이 공중보건 측면에서 비용 대비 효과가 매우 높음에도 불구하고, 제약 회사나 생명공학 기업들은 수익성이 낮기 때문에 이러한 질병을 대상으로 한 백신 개발에 큰 동기를 갖지 않는다. 상대적으로 부유한 국가에서도 재정적 수익은 제한적인 반면 개발 비용은 매우 크다. 최근 수십 년간 백신 접종 건수는 급격히 증가했지만, 이는 경제적 유인이 아니라 정부의 의무 접종 정책과 재정적 지원에 기인한 것이다. 따라서 대부분의 백신 개발은 정부, 대학, 비영리 단체가 제공하는 '푸시(push)형' 재정 지원에 의존하고 있다.</p>
+<p>전반적으로 백신의 발명은 특정 질병의 유병률을 현저히 감소시키는 데 기여하였다. 예를 들어, 백신은 인류 역사상 가장 전염성이 강하고 치명적인 질병 중 하나였던 천연두의 근절에 결정적인 역할을 하였다. 소아마비, 홍역, 장티푸스와 같은 다른 질병들 역시 100년 전과 비교하면 발생 빈도가 크게 줄어들었다. 인구의 대다수가 백신을 접종할 경우, 질병의 발생과 확산은 훨씬 어려워지는데, 이를 집단면역(herd immunity)이라고 한다. 그럼에도 불구하고 백신 접종에 반대하는 비판은 수세기 동안 지속되어 왔다. 백신의 도덕성, 효과성, 윤리 및 안전성을 둘러싼 논쟁이 끊임없이 제기되어 왔다. 그럼에도 현재 주류 의학계의 입장은, 심각한 감염병으로 인한 고통과 사망을 예방하는 백신의 이점이 드물게 발생하는 예방접종 후 부작용의 위험을 크게 상회한다는 것이다.</p>`;
+
+const TEST_QUESTIONS = [
+  "백신 개발로 이어진 인두법(variolation)은 아시아에서 시작되었지만, 그 정확한 기원에 대해서는 의견이 분분하다. 그렇다면 역사가들이 동의하는 인두법에 대한 최초의 명확한 기록은 무엇인가?",
+  "백신을 접종했음에도 해당 질병에 걸리는 경우가 있을 수 있다. 그럼에도 불구하고, 질병이 발생했을 때 백신이 가지는 이점은 무엇인가?",
+  "백신 사용의 역사에서 중요한 전환점 중 하나는 접종(inoculation)의 개발이다. 접종은 기존의 인두법(variolation)보다 왜 더 우수한 방법인가?",
+  "최근 수십 년간 백신 접종 건수는 급격히 증가하였다. 이러한 백신 개발과 접종 확대의 동력은 어디에서 비롯되는가?",
+  "천연두는 기원후 약 100년경, 오늘날 인도에 해당하는 지역에서 중국으로 전래된 것으로 추정된다. 인두법(variolation)에 대한 최초의 명확한 기록을 근거로 할 때, 중국에서 천연두에 대한 이러한 보호 방법이 발견되기까지 대략 몇 년이 걸렸다고 추론할 수 있는가?",
+  "한 영국 제국 관련 역사서는 영국에서 이루어진 많은 과학적 성과들이 외국에서 유입된 새로운 사상과 지식이 없었다면 불가능했을 것이라고 주장한다. 영국인 에드워드 제너가 최초의 현대적 백신을 개발한 사례는 이 주장을 어떻게 뒷받침할 수 있는가?",
+  "최근 개발된 비강 분무형 독감 백신은 코를 통해 흡입되며, 비강의 낮은 온도에서만 감염을 일으키는 약화된 바이러스를 포함하고 있다. 이러한 새로운 백신 접종 방식은 어떤 점에서 접종(inoculation)과 인두법(variolation)의 특징을 모두 결합하고 있는가?",
+  "일반적으로 단가 백신(monovalent)을 접종한 사람들은 다가 백신(polyvalent)을 접종한 사람들보다 더 빠르게 면역을 형성하는 경향이 있다. 단가 백신에서 면역 형성이 더 빠르게 이루어지는 이유는 무엇인가?",
+  "시만텍(Symantec)사는 인간 백신과 동일한 두 가지 목적을 수행할 수 있는 컴퓨터 바이러스 대응 소프트웨어를 개발하였다. 이 소프트웨어는 어떤 두 가지 목적을 위해 사용될 수 있는가?",
+  "산림 관리 기법 중 하나인 계획 화재(controlled burning)는 사람에게 백신 접종을 하는 접종(inoculation)과 동일한 원리에 기반하고 있다. 계획 화재는 어떤 방식으로 작동하는가?",
+  "재생에너지 기술 연구는 백신 개발과 마찬가지로 유사한 경제적 유인 구조에 의존한다. 재생에너지 기술 연구의 주요 동기는 어디에서 비롯되는가?",
+  "'가(valence)'라는 용어는 백신을 설명할 때 사용되며, 언어학에서도 문장의 논항(argument)과 동사의 관계를 설명하는 데 사용된다. 단가 동사(monovalent verb)와 다가 동사(polyvalent verb)의 차이는 무엇인가?"
+];
+
+const AISEQ_ITEMS = [
+  "누군가 나의 의견에 반대하더라도, 나는 AI를 활용하여 내가 원하는 결과를 달성할 방법을 찾을 수 있다.",
+  "나는 AI의 도움을 받아 나의 목표를 유지하고 달성하는 것이 쉽다.",
+  "나는 AI를 활용한다면 예상치 못한 상황에도 효율적으로 대처할 수 있다고 자신한다.",
+  "나는 AI의 도움을 바탕으로 예상치 못한 상황에 어떻게 대처해야 하는지 알고 있다.",
+  "나는 AI의 도움을 바탕으로 한 나의 대처 능력을 신뢰하기 때문에 어려운 상황에서도 침착함을 유지할 수 있다.",
+  "나는 어떤 상황에서도 AI의 도움을 받아 대부분의 문제를 잘 해결할 수 있다."
+];
+
+const SATISFY_TEXTS = {
+  1: "여러분은 <u><strong>모든 학습세션에서 ChatGPT를 활용</strong></u>하여 지문을 학습했습니다. 지금까지 자신의 학습 태도를 돌아보고 다음 설문 문항에 응답해주세요.",
+  2: "여러분은 <u><strong>첫 번째 학습세션에서는 ChatGPT를 활용하여, 두 번째 학습세션에서는 스스로</strong></u> 지문을 학습했습니다. 지금까지 자신의 학습 태도를 돌아보고 다음 설문 문항에 응답해주세요.",
+  3: "여러분은 <u><strong>첫 번째 학습세션에서는 스스로, 두 번째 학습세션에서는 ChatGPT를 활용하여</strong></u> 지문을 학습했습니다. 지금까지 자신의 학습 태도를 돌아보고 다음 설문 문항에 응답해주세요.",
+  4: "여러분은 <u><strong>모든 학습세션에서 스스로</strong></u> 지문을 학습했습니다. 지금까지 자신의 학습 태도를 돌아보고 다음 설문 문항에 응답해주세요."
+};
+
+const state = {
+  pid:'', condition:null,
+  condMap:{1:['ai','ai'],2:['ai','self'],3:['self','ai'],4:['self','self']},
+  data:{}, chat:{a:[],b:[]}, chatCount:{a:0,b:0},
+  testIdx:0, testAnswers:[],
+  timers:{}, pageEnterTime:{}, currentPage:null
+};
+
+// Researcher bar toggle: Ctrl+Shift+R
+document.addEventListener('keydown', e => {
+  if(e.ctrlKey && e.shiftKey && e.key === 'R'){
+    const bar = document.getElementById('researcher-bar');
+    bar.classList.toggle('visible');
+  }
+});
+
+function trackPageTime(newPage){
+  const now = Date.now();
+  if(state.currentPage){
+    const elapsed = Math.round((now - state.pageEnterTime[state.currentPage]) / 1000);
+    state.data['time_' + state.currentPage] = elapsed;
+  }
+  state.currentPage = newPage;
+  state.pageEnterTime[newPage] = now;
+}
+
+function selCond(n){
+  state.condition = n;
+  [1,2,3,4].forEach(i => document.getElementById('cb-'+i).classList.remove('selected'));
+  document.getElementById('cb-'+n).classList.add('selected');
+  document.getElementById('cond-err').style.display = 'none';
+}
+
+function startExp(){
+  const pid = document.getElementById('pid-input').value.trim();
+  let ok = true;
+  if(!pid){document.getElementById('pid-err').style.display='block'; ok=false;}
+  else document.getElementById('pid-err').style.display='none';
+  if(!state.condition){document.getElementById('cond-err').style.display='block'; ok=false;}
+  if(!ok) return;
+  state.pid = pid;
+  state.data = {pid, condition: state.condition, condLabel: state.condMap[state.condition].map(x=>x.toUpperCase()).join('→'), startTime: new Date().toISOString()};
+  document.getElementById('bar-info').textContent = `참가자: ${pid} | 조건 ${state.condition} (${state.data.condLabel})`;
+  goTo('s-intro');
+}
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  trackPageTime(id);
+}
+
+function buildLikert(id, name, count){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.innerHTML = Array.from({length:count}, (_,i) =>
+    `<input type="radio" name="${name}" id="${name}-${i+1}" value="${i+1}"><label for="${name}-${i+1}">${i+1}</label>`
+  ).join('');
+}
+
+function submitPreJOL(){
+  const v = parseInt(document.getElementById('jol-pre').value);
+  if(isNaN(v)||v<0||v>100){document.getElementById('jol-pre-err').style.display='block'; return;}
+  document.getElementById('jol-pre-err').style.display='none';
+  state.data.preJOL = v;
+  goTo('s-bl-instr');
+}
+
+function startBaseline(){
+  goTo('s-baseline');
+  setBarTimer(180, () => showLearnInstr('a'));
+}
+
+function showLearnInstr(section){
+  const type = state.condMap[state.condition][section==='a'?0:1];
+  if(section==='a') goTo(type==='ai'?'s-instr-a-ai':'s-instr-a-self');
+  else goTo(type==='ai'?'s-instr-b-ai':'s-instr-b-self');
+}
+
+function startLearn(section){
+  const type = state.condMap[state.condition][section==='a'?0:1];
+  goTo('s-learn-'+section);
+  const container = document.getElementById('learn-'+section+'-container');
+
+  if(type==='ai'){
+    container.innerHTML = `
+      <div class="learn-layout-split">
+        <div class="learn-left">
+          <div class="panel-label">지문</div>
+          <div class="passage-text">${PASSAGE_HTML}</div>
+        </div>
+        <div class="learn-right">
+          <div class="panel-label">ChatGPT</div>
+          <div class="chat-area" id="chat-${section}"></div>
+          <div class="chat-input-row">
+            <input type="text" id="chat-input-${section}" placeholder="ChatGPT에게 질문하세요..." onkeydown="if(event.key==='Enter')sendChat('${section}')" />
+            <button onclick="sendChat('${section}')">전송</button>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    container.innerHTML = `
+      <div class="learn-layout-full">
+        <div class="learn-full-inner">
+          <div class="passage-text">${PASSAGE_HTML}</div>
+        </div>
+      </div>`;
+  }
+
+  state.data['learn'+section.toUpperCase()+'Start'] = Date.now();
+  startLearnTimer(section, 360, () => {
+    state.data['learn'+section.toUpperCase()+'End'] = Date.now();
+    if(section==='a'){
+      buildLikert('effort-a-row','effort-a',9);
+      buildLikert('agency-a-row','agency-a',7);
+      goTo('s-survey-a-jol');
+    } else {
+      buildLikert('effort-b-row','effort-b',9);
+      buildLikert('agency-b-row','agency-b',7);
+      buildLikert('satisfy-row','satisfy',7);
+      document.getElementById('satisfy-desc').innerHTML = SATISFY_TEXTS[state.condition];
+      goTo('s-survey-b-jol');
+    }
+  });
+}
+
+function startLearnTimer(section, total, cb){
+  let secs = total;
+  const tEl = document.getElementById('timer-'+section);
+  const t = setInterval(() => {
+    secs--;
+    const m = Math.floor(secs/60), s = secs%60;
+    if(tEl){
+      tEl.textContent = `남은 시간 : ${m}:${s.toString().padStart(2,'0')}`;
+      if(secs<=60) tEl.classList.add('warning'); else tEl.classList.remove('warning');
+    }
+    if(secs<=0){clearInterval(t); if(cb) cb();}
+  }, 1000);
+  state.timers['learn-'+section] = t;
+}
+
+function setBarTimer(secs, cb){
+  clearInterval(state.timers.bar);
+  const el = document.getElementById('bar-timer');
+  const t = setInterval(() => {
+    secs--;
+    const m = Math.floor(secs/60), s = secs%60;
+    if(el) el.textContent = `⏱ ${m}:${s.toString().padStart(2,'0')}`;
+    if(secs<=0){clearInterval(t); if(el) el.textContent=''; if(cb) cb();}
+  }, 1000);
+  state.timers.bar = t;
+}
+
+async function sendChat(section){
+  const input = document.getElementById('chat-input-'+section);
+  const msg = input.value.trim();
+  if(!msg) return;
+  input.value = '';
+  state.chatCount[section]++;
+  const area = document.getElementById('chat-'+section);
+  area.innerHTML += `<div class="chat-msg user">${msg}</div>`;
+  const tid = 't-'+Date.now();
+  area.innerHTML += `<div class="chat-msg ai" id="${tid}">입력 중...</div>`;
+  area.scrollTop = area.scrollHeight;
+  state.chat[section].push({role:'user', content:msg});
+  try {
+    const res = await fetch('/api/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({messages: state.chat[section]})
+    });
+    const data = await res.json();
+    const reply = data.reply || '응답을 가져올 수 없습니다.';
+    state.chat[section].push({role:'assistant', content:reply});
+    document.getElementById(tid).textContent = reply;
+  } catch(e) {
+    document.getElementById(tid).textContent = '[서버 연결 오류]';
+  }
+  area.scrollTop = area.scrollHeight;
+}
+
+function submitJOLA(){
+  const v = parseInt(document.getElementById('jol-a').value);
+  if(isNaN(v)||v<0||v>100){document.getElementById('jol-a-err').style.display='block'; return;}
+  document.getElementById('jol-a-err').style.display='none';
+  state.data.jolA = v;
+  goTo('s-survey-a-likert');
+}
+
+function submitSurveyALikert(){
+  const effort = document.querySelector('input[name="effort-a"]:checked');
+  const agency = document.querySelector('input[name="agency-a"]:checked');
+  let ok = true;
+  if(!effort){document.getElementById('effort-a-err').style.display='block'; ok=false;}
+  else document.getElementById('effort-a-err').style.display='none';
+  if(!agency){document.getElementById('agency-a-err').style.display='block'; ok=false;}
+  else document.getElementById('agency-a-err').style.display='none';
+  if(!ok) return;
+  state.data.effortA = parseInt(effort.value);
+  state.data.agencyA = parseInt(agency.value);
+  goTo('s-rest-ab-instr');
+}
+
+function startRest(type){
+  if(type==='ab'){goTo('s-rest-ab'); setBarTimer(30, () => showLearnInstr('b'));}
+  else if(type==='dist'){goTo('s-rest-dist'); setBarTimer(30, () => goTo('s-dist-instr'));}
+  else if(type==='test'){goTo('s-rest-test'); setBarTimer(30, () => goTo('s-test-instr'));}
+}
+
+function submitJOLB(){
+  const v = parseInt(document.getElementById('jol-b').value);
+  if(isNaN(v)||v<0||v>100){document.getElementById('jol-b-err').style.display='block'; return;}
+  document.getElementById('jol-b-err').style.display='none';
+  state.data.jolB = v;
+  goTo('s-survey-b-likert');
+}
+
+function submitSurveyBLikert(){
+  const effort = document.querySelector('input[name="effort-b"]:checked');
+  const agency = document.querySelector('input[name="agency-b"]:checked');
+  let ok = true;
+  if(!effort){document.getElementById('effort-b-err').style.display='block'; ok=false;}
+  else document.getElementById('effort-b-err').style.display='none';
+  if(!agency){document.getElementById('agency-b-err').style.display='block'; ok=false;}
+  else document.getElementById('agency-b-err').style.display='none';
+  if(!ok) return;
+  state.data.effortB = parseInt(effort.value);
+  state.data.agencyB = parseInt(agency.value);
+  goTo('s-survey-b-satisfy');
+}
+
+function submitSatisfy(){
+  const v = document.querySelector('input[name="satisfy"]:checked');
+  if(!v){document.getElementById('satisfy-err').style.display='block'; return;}
+  document.getElementById('satisfy-err').style.display='none';
+  state.data.satisfyB = parseInt(v.value);
+  goTo('s-rest-dist-instr');
+}
+
+function startDistractor(){
+  goTo('s-dist');
+  generateMath();
+  let secs = 120;
+  const tEl = document.getElementById('timer-dist');
+  const t = setInterval(() => {
+    secs--;
+    const m = Math.floor(secs/60), s = secs%60;
+    if(tEl){
+      tEl.textContent = `남은 시간 : ${m}:${s.toString().padStart(2,'0')}`;
+      if(secs<=30) tEl.classList.add('warning');
+    }
+    if(secs<=0){clearInterval(t); goTo('s-rest-test-instr');}
+  }, 1000);
+}
+
+function generateMath(){
+  const list = document.getElementById('math-list');
+  const problems = [];
+  for(let i=0; i<100; i++){
+    let a, b, op, ans;
+    do {
+      a = Math.floor(Math.random()*40)+10;
+      b = Math.floor(Math.random()*40)+10;
+      op = Math.random()>0.5 ? '+' : '-';
+      ans = op==='+' ? a+b : a-b;
+    } while(ans < 0 || ans > 99);
+    problems.push({q:`${a} ${op} ${b} = ?`, ans});
+  }
+  list.innerHTML = problems.map((p,i) => `
+    <div class="math-item">
+      <div class="math-q">${p.q}</div>
+      <input class="math-input" type="number" id="math-${i}" data-ans="${p.ans}" placeholder="?" />
+    </div>`).join('');
+}
+
+function startTest(){
+  state.testIdx = 0;
+  state.testAnswers = Array(TEST_QUESTIONS.length).fill('');
+  buildLikert('prior-row','prior',7);
+  buildLikert('aifreq-row','aifreq',7);
+  buildAISeq();
+  showTestQ();
+  goTo('s-test');
+}
+
+function showTestQ(){
+  document.getElementById('test-q-text').textContent = TEST_QUESTIONS[state.testIdx];
+  document.getElementById('test-answer').value = state.testAnswers[state.testIdx] || '';
+  document.getElementById('test-ans-err').style.display = 'none';
+}
+
+function nextTestQ(){
+  const ans = document.getElementById('test-answer').value.trim();
+  if(!ans){document.getElementById('test-ans-err').style.display='block'; return;}
+  document.getElementById('test-ans-err').style.display='none';
+  state.testAnswers[state.testIdx] = ans;
+  if(state.testIdx < TEST_QUESTIONS.length-1){
+    state.testIdx++;
+    showTestQ();
+    window.scrollTo(0,0);
+  } else {
+    TEST_QUESTIONS.forEach((q,i) => {state.data['test_q'+(i+1)] = state.testAnswers[i];});
+    goTo('s-post');
+  }
+}
+
+function buildAISeq(){
+  const container = document.getElementById('aiseq-items');
+  container.innerHTML = AISEQ_ITEMS.map((item,i) => `
+    <div style="margin-bottom:20px;">
+      <div style="font-size:14px;margin-bottom:10px;color:#1a1a1a;">${i+1}. ${item}</div>
+      <div class="likert-row" id="aiseq-row-${i}"></div>
+      <div class="likert-ends"><span>전혀 그렇지 않다</span><span>매우 그렇다</span></div>
+      <div class="err-inline" id="aiseq-err-${i}">응답을 선택해주세요.</div>
+    </div>`).join('');
+  AISEQ_ITEMS.forEach((_,i) => buildLikert('aiseq-row-'+i, 'aiseq-'+i, 4));
+}
+
+async function submitPost(){
+  let ok = true;
+  const prior = document.querySelector('input[name="prior"]:checked');
+  const aifreq = document.querySelector('input[name="aifreq"]:checked');
+  if(!prior){document.getElementById('prior-err').style.display='block'; ok=false;}
+  else document.getElementById('prior-err').style.display='none';
+  if(!aifreq){document.getElementById('aifreq-err').style.display='block'; ok=false;}
+  else document.getElementById('aifreq-err').style.display='none';
+  AISEQ_ITEMS.forEach((_,i) => {
+    const v = document.querySelector('input[name="aiseq-'+i+'"]:checked');
+    if(!v){document.getElementById('aiseq-err-'+i).style.display='block'; ok=false;}
+    else document.getElementById('aiseq-err-'+i).style.display='none';
+  });
+  const age = document.getElementById('age').value.trim();
+  const gender = document.querySelector('input[name="gender"]:checked');
+  const major = document.getElementById('major').value.trim();
+  const aiUsage = document.getElementById('ai-usage').value.trim();
+  if(!age){document.getElementById('age-err').style.display='block'; ok=false;}
+  else document.getElementById('age-err').style.display='none';
+  if(!gender){document.getElementById('gender-err').style.display='block'; ok=false;}
+  else document.getElementById('gender-err').style.display='none';
+  if(!major){document.getElementById('major-err').style.display='block'; ok=false;}
+  else document.getElementById('major-err').style.display='none';
+  if(!aiUsage){document.getElementById('ai-usage-err').style.display='block'; ok=false;}
+  else document.getElementById('ai-usage-err').style.display='none';
+  if(!ok) return;
+
+  state.data.priorKnowledge = parseInt(prior.value);
+  state.data.aiFrequency = parseInt(aifreq.value);
+  AISEQ_ITEMS.forEach((_,i) => {
+    state.data['aiseq_'+(i+1)] = parseInt(document.querySelector('input[name="aiseq-'+i+'"]:checked').value);
+  });
+  state.data.aiUsageText = aiUsage;
+  state.data.age = parseInt(age);
+  state.data.gender = gender.value==='male'?'남':'여';
+  state.data.major = major;
+  state.data.endTime = new Date().toISOString();
+  state.data.chatCountA = state.chatCount.a;
+  state.data.chatCountB = state.chatCount.b;
+
+  // Record final page time
+  trackPageTime('s-end');
+
+  // Show saving status
+  const statusEl = document.getElementById('save-status');
+  statusEl.style.display = 'block';
+  statusEl.textContent = '구글 드라이브에 저장 중...';
+
+  // Save to Google Drive via server
+  try {
+    await Promise.all([
+      fetch('/api/save', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({type:'csv', data: state.data})
+      }),
+      fetch('/api/save', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({type:'chat', data:{
+          pid: state.pid,
+          condLabel: state.data.condLabel,
+          startTime: state.data.startTime,
+          endTime: state.data.endTime,
+          chatCountA: state.chatCount.a,
+          chatCountB: state.chatCount.b,
+          chatA: state.chat.a,
+          chatB: state.chat.b
+        }})
+      })
+    ]);
+    statusEl.textContent = '✓ 구글 드라이브 저장 완료';
+    statusEl.style.color = '#059669';
+  } catch(e) {
+    statusEl.textContent = '저장 중 오류가 발생했습니다. 수동 다운로드를 이용해주세요.';
+    statusEl.style.color = '#dc2626';
+  }
+
+  goTo('s-end');
+}
+
+function downloadCSV(){
+  const headers = Object.keys(state.data);
+  const values = Object.values(state.data).map(v => typeof v==='string' ? `"${v.replace(/"/g,'""')}"` : v);
+  const csv = '\uFEFF' + headers.join(',') + '\n' + values.join(',');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = `${state.pid}_data.csv`;
+  a.click();
+}
+
+function downloadChat(){
+  let txt = `참가자: ${state.pid} | 조건: ${state.data.condLabel}\n`;
+  txt += `실험 시작: ${state.data.startTime}\n실험 종료: ${state.data.endTime}\n\n`;
+  txt += '='.repeat(50)+'\n';
+  txt += `섹션 A 대화 내용 (총 ${state.chatCount.a}회)\n`;
+  txt += '='.repeat(50)+'\n\n';
+  state.chat.a.forEach(m => {txt += `[${m.role==='user'?'참가자':'ChatGPT'}]\n${m.content}\n\n`;});
+  txt += '='.repeat(50)+'\n';
+  txt += `섹션 B 대화 내용 (총 ${state.chatCount.b}회)\n`;
+  txt += '='.repeat(50)+'\n\n';
+  state.chat.b.forEach(m => {txt += `[${m.role==='user'?'참가자':'ChatGPT'}]\n${m.content}\n\n`;});
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
+  a.download = `${state.pid}_chat.txt`;
+  a.click();
+}
+</script>
+</body>
+</html>
