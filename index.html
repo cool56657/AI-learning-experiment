@@ -714,14 +714,17 @@ function startLearn(section){
           </div>
         </div>
       </div>`;
-  } else {
-    container.innerHTML = `
-      <div class="learn-layout-full">
-        <div class="learn-full-inner">
-          <div class="passage-text">${PASSAGE_HTML}</div>
-        </div>
-      </div>`;
-  }
+} else {
+  container.innerHTML = `
+    <div class="learn-layout-split">
+      <div class="learn-left">
+        <div class="panel-label">지문</div>
+        <div class="passage-text">${PASSAGE_HTML}</div>
+      </div>
+      <div class="learn-right empty-panel">
+      </div>
+    </div>`;
+}
 
   state.data['learn'+section.toUpperCase()+'Start'] = Date.now();
   startLearnTimer(section, 360, () => {
