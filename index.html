@@ -808,7 +808,11 @@ async function sendChat(section){
   const tid = 't-'+Date.now();
   area.innerHTML += `<div class="chat-msg ai" id="${tid}">입력 중...</div>`;
   area.scrollTop = area.scrollHeight;
-  state.chat[section].push({role:'user', content:msg});
+  state.chat[section].push({
+  role: 'user',
+  content: msg,
+  timestamp: new Date().toISOString()
+});
   try {
     const res = await fetch('/api/chat', {
       method:'POST',
@@ -817,7 +821,11 @@ async function sendChat(section){
     });
     const data = await res.json();
     const reply = data.reply || '응답을 가져올 수 없습니다.';
-    state.chat[section].push({role:'assistant', content:reply});
+    state.chat[section].push({
+  role: 'assistant',
+  content: reply,
+  timestamp: new Date().toISOString()
+});
     document.getElementById(tid).innerHTML = reply.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
   } catch(e) {
     document.getElementById(tid).textContent = '[서버 연결 오류]';
