@@ -98,12 +98,14 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#ff
 .survey-card{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:28px 32px;margin-bottom:20px;}
 .survey-q{font-size:15px;margin-bottom:8px;line-height:1.7;color:#1a1a1a;}
 .survey-scale{font-size:13px;color:#1a1a1a;margin-bottom:14px;}
-.likert-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.likert-wrap-row{display:flex;align-items:center;gap:12px;}
+.likert-end-label{font-size:12px;color:#6b7280;white-space:normal;flex-shrink:0;width:90px;line-height:1.5;text-align:center;}
+.likert-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;}
 .likert-row input[type=radio]{display:none;}
-.likert-row label{width:40px;height:40px;border-radius:50%;border:1.5px solid #d1d5db;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:#6b7280;background:white;transition:all .1s;}
+.likert-row label{width:40px;height:40px;border-radius:50%;border:1.5px solid #d1d5db;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:#6b7280;background:white;transition:all .1s;flex-shrink:0;}
 .likert-row input[type=radio]:checked+label{background:#7c3aed;color:white;border-color:#7c3aed;}
 .likert-row label:hover{border-color:#7c3aed;}
-.likert-ends{display:flex;justify-content:space-between;font-size:11px;color:#6b7280;margin-top:8px;}
+.likert-ends{display:none;}
 .survey-session-label{font-size:15px;color:#1a1a1a;margin-bottom:20px;line-height:1.7;}
 
 /* Math */
@@ -288,15 +290,21 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#ff
     <div class="survey-card">
       <div class="survey-q">나는 학습할 때,</div>
       <div class="survey-scale">1 (매우 낮은 정신적 노력을 들였다) ~ 9 (매우 높은 정신적 노력을 들였다)</div>
-      <div class="likert-row" id="effort-a-row"></div>
-      <div class="likert-ends"><span>매우 낮은 정신적 노력을 들였다</span><span>매우 높은 정신적 노력을 들였다</span></div>
+      <div class="likert-wrap-row">
+          <span class="likert-end-label">매우 낮은<br>정신적 노력을<br>들였다</span>
+          <div class="likert-row" id="effort-a-row"></div>
+          <span class="likert-end-label" style="text-align:right;">매우 높은<br>정신적 노력을<br>들였다</span>
+        </div>
       <div class="err-inline" id="effort-a-err">응답을 선택해주세요.</div>
     </div>
     <div class="survey-card">
       <div class="survey-q">나는 학습 과정을</div>
       <div class="survey-scale">1 (내가 주도하지 않는다고 느꼈다) ~ 7 (내가 주도하고 있다고 느꼈다)</div>
-      <div class="likert-row" id="agency-a-row"></div>
-      <div class="likert-ends"><span>내가 주도하지 않는다고 느꼈다</span><span>내가 주도하고 있다고 느꼈다</span></div>
+      <div class="likert-wrap-row">
+          <span class="likert-end-label">내가 주도하지<br>않는다고<br>느꼈다</span>
+          <div class="likert-row" id="agency-a-row"></div>
+          <span class="likert-end-label" style="text-align:right;">내가 주도하고<br>있다고<br>느꼈다</span>
+        </div>
       <div class="err-inline" id="agency-a-err">응답을 선택해주세요.</div>
     </div>
     <button class="btn-arrow" onclick="submitSurveyALikert()">다음</button>
@@ -387,15 +395,21 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#ff
     <div class="survey-card">
       <div class="survey-q">나는 학습할 때,</div>
       <div class="survey-scale">1 (매우 낮은 정신적 노력을 들였다) ~ 9 (매우 높은 정신적 노력을 들였다)</div>
-      <div class="likert-row" id="effort-b-row"></div>
-      <div class="likert-ends"><span>매우 낮은 정신적 노력을 들였다</span><span>매우 높은 정신적 노력을 들였다</span></div>
+      <div class="likert-wrap-row">
+          <span class="likert-end-label">매우 낮은<br>정신적 노력을<br>들였다</span>
+          <div class="likert-row" id="effort-b-row"></div>
+          <span class="likert-end-label" style="text-align:right;">매우 높은<br>정신적 노력을<br>들였다</span>
+        </div>
       <div class="err-inline" id="effort-b-err">응답을 선택해주세요.</div>
     </div>
     <div class="survey-card">
       <div class="survey-q">나는 학습 과정을</div>
       <div class="survey-scale">1 (내가 주도하지 않는다고 느꼈다) ~ 7 (내가 주도하고 있다고 느꼈다)</div>
-      <div class="likert-row" id="agency-b-row"></div>
-      <div class="likert-ends"><span>내가 주도하지 않는다고 느꼈다</span><span>내가 주도하고 있다고 느꼈다</span></div>
+      <div class="likert-wrap-row">
+          <span class="likert-end-label">내가 주도하지<br>않는다고<br>느꼈다</span>
+          <div class="likert-row" id="agency-b-row"></div>
+          <span class="likert-end-label" style="text-align:right;">내가 주도하고<br>있다고<br>느꼈다</span>
+        </div>
       <div class="err-inline" id="agency-b-err">응답을 선택해주세요.</div>
     </div>
     <button class="btn-arrow" onclick="submitSurveyBLikert()">다음</button>
@@ -410,8 +424,11 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#ff
       <div class="survey-q" id="satisfy-desc" style="margin-bottom:20px;"></div>
       <div class="survey-q">나는 지금까지의 학습 방식이</div>
       <div class="survey-scale">1 (전혀 만족스럽지 않았다) ~ 7 (매우 만족스러웠다)</div>
-      <div class="likert-row" id="satisfy-row"></div>
-      <div class="likert-ends"><span>전혀 만족스럽지 않았다</span><span>매우 만족스러웠다</span></div>
+      <div class="likert-wrap-row">
+          <span class="likert-end-label">전혀<br>만족스럽지<br>않았다</span>
+          <div class="likert-row" id="satisfy-row"></div>
+          <span class="likert-end-label" style="text-align:right;">매우<br>만족스러웠다</span>
+        </div>
       <div class="err-inline" id="satisfy-err">응답을 선택해주세요.</div>
     </div>
     <button class="btn-arrow" onclick="submitSatisfy()">다음</button>
@@ -512,15 +529,21 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#ff
     <div class="survey-card">
       <div class="survey-q">본 실험에 참여하기 전, 답을 알고 있는 문제가 있었나요?<br><span style="font-size:13px;color:#6b7280;">(백신에 대한 사전지식이 얼마나 있었는지 7점 척도로 응답해주세요.)</span></div>
       <div class="survey-scale" style="margin-top:10px;">1 (학습한 내용에 대한 사전지식이 전혀 없었다) ~ 7 (학습한 내용에 대해 많이 알고 있었다)</div>
-      <div class="likert-row" id="prior-row"></div>
-      <div class="likert-ends"><span>사전지식이 전혀 없었다</span><span>많이 알고 있었다</span></div>
+      <div class="likert-wrap-row">
+          <span class="likert-end-label">사전지식이<br>전혀 없었다</span>
+          <div class="likert-row" id="prior-row"></div>
+          <span class="likert-end-label" style="text-align:right;">많이<br>알고 있었다</span>
+        </div>
       <div class="err-inline" id="prior-err">응답을 선택해주세요.</div>
     </div>
     <div class="survey-card">
       <div class="survey-q">평소 학습할 때, AI를 얼마나 자주 사용하나요?</div>
       <div class="survey-scale" style="margin-top:10px;">1 (AI를 전혀 사용하지 않는다) ~ 7 (AI를 항상 사용한다)</div>
-      <div class="likert-row" id="aifreq-row"></div>
-      <div class="likert-ends"><span>전혀 사용하지 않는다</span><span>항상 사용한다</span></div>
+      <div class="likert-wrap-row">
+          <span class="likert-end-label">전혀<br>사용하지 않는다</span>
+          <div class="likert-row" id="aifreq-row"></div>
+          <span class="likert-end-label" style="text-align:right;">항상<br>사용한다</span>
+        </div>
       <div class="err-inline" id="aifreq-err">응답을 선택해주세요.</div>
     </div>
     <div class="survey-card">
@@ -931,8 +954,11 @@ function buildAISeq(){
   container.innerHTML = AISEQ_ITEMS.map((item,i) => `
     <div style="margin-bottom:20px;">
       <div style="font-size:14px;margin-bottom:10px;color:#1a1a1a;">${i+1}. ${item}</div>
-      <div class="likert-row" id="aiseq-row-${i}"></div>
-      <div class="likert-ends"><span>전혀 그렇지 않다</span><span>매우 그렇다</span></div>
+      <div class="likert-wrap-row">
+          <span class="likert-end-label">전혀<br>그렇지 않다</span>
+          <div class="likert-row" id="aiseq-row-${i}"></div>
+          <span class="likert-end-label" style="text-align:right;">매우<br>그렇다</span>
+        </div>
       <div class="err-inline" id="aiseq-err-${i}">응답을 선택해주세요.</div>
     </div>`).join('');
   AISEQ_ITEMS.forEach((_,i) => buildLikert('aiseq-row-'+i, 'aiseq-'+i, 4));
