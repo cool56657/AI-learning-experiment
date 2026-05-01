@@ -817,7 +817,7 @@ async function sendChat(section){
     const res = await fetch('/api/chat', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({messages: state.chat[section]})
+      body: JSON.stringify({messages: state.chat[section].map(m => ({role: m.role, content: m.content}))})
     });
     const data = await res.json();
     const reply = data.reply || '응답을 가져올 수 없습니다.';
