@@ -270,7 +270,7 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#ff
     <div class="survey-session-label">지금부터는 &lt;첫 번째 학습세션&gt;에 대한 자신의 학습 태도를 돌아보고, 다음 설문 문항에 답해주세요.</div>
     <div class="notice">※ 지문의 내용과 본인의 학습 과정에 대해 충분히 생각한 후에 응답해 주시길 바랍니다 ※</div>
     <div class="survey-card">
-      <div class="survey-q">만약 지금 최종시험을 본다면, 몇 %의 문제를 맞힐 수 있을 거라고 생각하나요??<br><span style="font-size:13px;color:#6b7280;">0 (문제를 전혀 맞히지 못할 것 같다) ~ 100 (문제를 매우 잘 맞힐 것 같다)</span></div>
+      <div class="survey-q">만약 지금 최종시험을 본다면, 몇 %의 문제를 맞힐 수 있을 거라고 생각하나요?<br><span style="font-size:13px;color:#6b7280;">0 (문제를 전혀 맞히지 못할 것 같다) ~ 100 (문제를 매우 잘 맞힐 것 같다)</span></div>
       <div class="jol-wrap">
         <strong>지금 0에서 100 사이의 숫자를 입력해 주세요.</strong>
         <div style="margin-top:12px;"><input class="jol-input" type="number" id="jol-a" min="0" max="100" /></div>
@@ -331,7 +331,7 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#ff
 <div id="s-instr-b-ai" class="screen">
   <div class="content-wrap">
     <div class="instr-box">
-      지금부터 여러분은 <strong>'백신'</strong>에 대한 지문을 <strong>다시</strong> 학습합니다.<br>
+      지금부터 여러분은 <strong>'백신(vaccine)'</strong>에 대한 지문을 <strong>다시</strong> 학습합니다.<br>
       최종시험에서는 학습한 지문과 관련된 문제들을 풀게 됩니다.<br><br>
       학습에는 <strong>6분</strong>의 시간이 주어지며,<br>
       시간이 종료되면 자동으로 다음 화면으로 넘어갑니다.<br><br>
@@ -349,7 +349,7 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#ff
 <div id="s-instr-b-self" class="screen">
   <div class="content-wrap">
     <div class="instr-box">
-      지금부터 여러분은 <strong>'백신'</strong>에 대한 지문을 <strong>다시</strong> 학습합니다.<br>
+      지금부터 여러분은 <strong>'백신(vaccine)'</strong>에 대한 지문을 <strong>다시</strong> 학습합니다.<br>
       최종시험에서는 학습한 지문과 관련된 문제들을 풀게 됩니다.<br><br>
       학습에는 <strong>6분</strong>의 시간이 주어지며,<br>
       시간이 종료되면 자동으로 다음 화면으로 넘어갑니다.<br><br>
@@ -817,7 +817,7 @@ async function sendChat(section){
     const res = await fetch('/api/chat', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({messages: state.chat[section].map(m => ({role: m.role, content: m.content}))})
+      body: JSON.stringify({messages: state.chat[section]})
     });
     const data = await res.json();
     const reply = data.reply || '응답을 가져올 수 없습니다.';
