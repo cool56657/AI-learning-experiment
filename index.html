@@ -1070,11 +1070,11 @@ function downloadChat(){
   txt += '='.repeat(50)+'\n';
   txt += `섹션 A 대화 내용 (총 ${state.chatCount.a}회)\n`;
   txt += '='.repeat(50)+'\n\n';
-  state.chat.a.forEach(m => {txt += `[${m.role==='user'?'참가자':'ChatGPT'}]\n${m.content}\n\n`;});
+  state.chat.a.forEach(m => {txt += `[${m.role==='user'?'참가자':'ChatGPT'}] ${m.timestamp||''}\n${m.content}\n\n`;});
   txt += '='.repeat(50)+'\n';
   txt += `섹션 B 대화 내용 (총 ${state.chatCount.b}회)\n`;
   txt += '='.repeat(50)+'\n\n';
-  state.chat.b.forEach(m => {txt += `[${m.role==='user'?'참가자':'ChatGPT'}]\n${m.content}\n\n`;});
+  state.chat.b.forEach(m => {txt += `[${m.role==='user'?'참가자':'ChatGPT'}] ${m.timestamp||''}\n${m.content}\n\n`;});
   const a = document.createElement('a');
   a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
   a.download = `${state.pid}_chat.txt`;
