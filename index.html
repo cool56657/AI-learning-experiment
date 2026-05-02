@@ -1007,7 +1007,7 @@ async function submitPost(){
   });
   state.data.aiUsageText = aiUsage;
   state.data.age = parseInt(age);
-  state.data.gender = gender.value==='male'?'남':'여';
+  state.data.gender = gender.value==='male' ? '남' : gender.value==='female' ? '여' : '응답을 원하지 않음';
   state.data.major = major;
   state.data.endTime = new Date().toISOString();
   state.data.chatCountA = state.chatCount.a;
