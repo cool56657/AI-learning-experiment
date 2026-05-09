@@ -457,7 +457,8 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#ff
     <div class="instr-box">
       지금부터는 간단한 수학 연산문제를 풀게 됩니다.<br>
       <strong>2분</strong> 동안 문제를 풀 수 있으며, 2분이 지나면 자동으로 화면이 전환됩니다.<br>
-      문제를 가능한 한 <strong>빠르고 정확하게</strong> 풀어주세요.
+      문제를 가능한 한 <strong>빠르고 정확하게</strong> 풀어주세요.<br><br>
+      답을 입력한 후 <strong>Tab 키</strong>를 누르면 다음 문제로 넘어갑니다.
     </div>
     <button class="btn-arrow" onclick="startDistractor()">다음</button>
   </div>
@@ -527,12 +528,12 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#ff
       <span style="font-size:14px;color:#6b7280;">(답변에 관계없이 실험이 완료되면 보상이 지급되니, 솔직하게 응답해주세요.)</span>
     </div>
     <div class="survey-card">
-      <div class="survey-q">본 실험에 참여하기 전, 답을 알고 있는 문제가 있었나요?<br><span style="font-size:13px;color:#6b7280;">(백신에 대한 사전지식이 얼마나 있었는지 7점 척도로 응답해주세요.)</span></div>
-      <div class="survey-scale" style="margin-top:10px;">1 (학습한 내용에 대한 사전지식이 전혀 없었다) ~ 7 (학습한 내용에 대해 많이 알고 있었다)</div>
+      <div class="survey-q">본 실험에 참여하기 전, 답을 정확하게 알고 있는 문제가 있었나요?<br><span style="font-size:13px;color:#6b7280;">(사전지식이 얼마나 있었는지 7점 척도로 응답해주세요.)</span></div>
+      <div class="survey-scale" style="margin-top:10px;">1 (모든 문제의 답을 거의 알지 못했다) ~ 7 (모든 문제의 답을 정확하게 알고 있었다)</div>
       <div class="likert-wrap-row">
-          <span class="likert-end-label">사전지식이<br>전혀 없었다</span>
+          <span class="likert-end-label">거의 <br>알지 못했다</span>
           <div class="likert-row" id="prior-row"></div>
-          <span class="likert-end-label">많이<br>알고 있었다</span>
+          <span class="likert-end-label">모두<br>알고 있었다</span>
         </div>
       <div class="err-inline" id="prior-err">응답을 선택해주세요.</div>
     </div>
