@@ -341,7 +341,7 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#ff
       학습 과정에서<strong>ChatGPT를 적극적으로 활용해 주세요.</strong><br>
       <span class="instr-note">※ 개인의 신상과 관련된 민감한 정보는 입력하실 수 없습니다 ※</span>
     </div>
-    <button class="btn-arrow" onclick="startLearn('a')">다음</button>
+    <button class="btn-arrow" onclick="startLearn('b')">다음</button>
   </div>
 </div>
 
@@ -924,7 +924,8 @@ function generateMath(){
   list.innerHTML = problems.map((p,i) => `
     <div class="math-item">
       <div class="math-q">${p.q}</div>
-      <input class="math-input" type="number" id="math-${i}" data-ans="${p.ans}" placeholder="?" />
+      <input class="math-input" type="number" id="math-${i}" data-ans="${p.ans}" placeholder="?"
+        onkeydown="if(event.key==='Tab'){event.preventDefault();const next=document.getElementById('math-${i+1}');if(next){next.focus();next.scrollIntoView({behavior:'smooth',block:'center'});}}" />
     </div>`).join('');
 }
 
